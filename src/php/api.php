@@ -1,27 +1,21 @@
 <?php
+require __DIR__ ."/app.php";
 
-require_once __DIR__ ."/app.php";
-
-
-class Persona  extends Query
-{
-    public $nombre;
-    public $apellido;
-    public $edad;
-
-    public function __construct()
-    {
-        $this->nombre = $this->generarNombre();
-        $this->apellido = $this->generarApellido();
-        $this->edad = $this->generarEdad();
+class Api extends Query {
+    public function getAll() {
+        return $this->ejecutarConsulta("SELECT * FROM usuarios");
     }
-
+    public function storeData($table, $data) {
+        return $this->ejecutarInsertConsulta($table, $data);
+    }
+    public function EditData($table, $data, $key) {
+        return $this->ejecutarUpdateConsulta($table, $data, $key);
+    }
     public function generarNombre()
     {
         $nombres = ["Ana", "Carlos", "Diana", "Enrique", "Felipe", "Gabriela", "Hector", "Isabel", "Juan", "Karina"];
         return $nombres[rand(0, count($nombres) - 1)];
     }
-
     public function generarApellido()
     {
         $apellidos = ["Pérez", "García", "Rodríguez", "López", "Sánchez", "Martínez", "Torres", "González", "Núñez", "Castro"];
@@ -32,29 +26,28 @@ class Persona  extends Query
     {
         return rand(18, 65);
     }
-
-    public function  test()
-    {   
-        $this->getResults('select * from usuarios');
-    }
     
 }
 
+$api = new Api();
 
 
-$persona = new Persona();
-$sql = "SELECT * FROM usuarios";
-$persona->getResults($sql);
 for ($i = 0; $i < 10; $i++) {
-    // $registros[] = [
-    //     'nombre' => $persona->generarNombre(),
-    //     'apellido' => $persona->generarApellido(),
-    //     'edad' => $persona->generarEdad(),
-    // ];
+    $registros[] = [
+        'nombre' => $api->generarNombre(),
+        'apellido' => $api->generarApellido(),
+        'edad' => $api->generarEdad(),
+    ];
 }
-// $json = json_encode($registros);
+$cantidadRegistros = count($api->getall());
+foreach ($registros as $key => $value) {
+    if($cantidadRegistros >= 10){
+        $api->EditData("usuarios", $registros[$key], $key+1);
+    }else{
+        $api->storeData("usuarios", $registros[$key]);
+    }
 
-// foreach ($registros as $key => $value) {
-    
-// }
-// echo $json;
+}
+$json = json_encode($api->getAll());
+
+echo $json;
